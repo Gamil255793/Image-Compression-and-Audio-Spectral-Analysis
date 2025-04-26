@@ -1,167 +1,96 @@
-# Image-Compression-and-Audio-Spectral-Analysis
 Project Overview
-This project involves two main tasks:
+This project consists of two main tasks: Image Compression and Audio Spectral Analysis and Filtering. Each task is implemented in MATLAB, and the project demonstrates techniques such as Discrete Cosine Transform (DCT), Inverse DCT (IDCT), Butterworth filtering, and frequency domain analysis.
 
-Image Compression using DCT
-
-Audio Spectral Analysis and Filtering
-
-The image compression part includes reading an image, decomposing it into its color components, applying block-based DCT for compression, and then reconstructing the image using inverse DCT.
-The audio part involves performing spectral analysis on an audio signal, applying a Butterworth filter, and visualizing the results.
-
-Sections:
-Image Compression
-
-Audio Spectral Analysis and Filtering
-
-1. Image Compression
-Objective:
-Compress an image by applying the Discrete Cosine Transform (DCT) to its color components, retaining the top-left mxm block, and then decompressing it using Inverse DCT.
+Task 1: Image Compression
+Description:
+The image compression task demonstrates how to apply the Discrete Cosine Transform (DCT) and Inverse DCT to compress an image and then decompress it. The image is decomposed into three color components (Red, Green, and Blue), and various compression levels (m=1 to m=4) are applied to each color component. The compression is done by retaining only the top-left mxm block of the DCT of each 8x8 block of the image, followed by padding and inverse DCT for decompression.
 
 Steps:
-a) Decompose the Image:
-The image is read into a matrix, then decomposed into Red, Green, and Blue components. Each component is saved as a separate image file.
+Decompose the image into its Red, Green, and Blue components.
 
-A = imread('image1.bmp');
-RA = A(:,:,1);  % Red Component
-GA = A(:,:,2);  % Green Component
-BA = A(:,:,3);  % Blue Component
-imwrite(RA,'imageredcomponent.bmp');
-imwrite(GA,'imagegreencomponent.bmp');
-imwrite(BA,'imagebluecomponent.bmp');
-b) Compression (DCT and Block Processing):
-Apply DCT on 8x8 blocks of each color component and retain the top-left mxm part for compression.
+Apply DCT to the 8x8 blocks of each color component.
 
-A = imread('image1.bmp');
-RA = A(:,:,1);
-GA = A(:,:,2);
-BA = A(:,:,3);
-m = 3;  % Compression level (can vary from 1 to 4)
-fun1 = @(block_struct) dct2(block_struct.data);
-fun2 = @(block_struct) block_struct.data(1:m,1:m);  % Take the top-left mxm block
-RA_dct = blockproc(RA,[8 8],fun1);
-GA_dct = blockproc(GA,[8 8],fun1);
-BA_dct = blockproc(BA,[8 8],fun1);
-RA_compressed = blockproc(RA_dct,[8 8],fun2);
-GA_compressed = blockproc(GA_dct,[8 8],fun2);
-BA_compressed = blockproc(BA_dct,[8 8],fun2);
-imwrite(cat(3,RA_compressed,GA_compressed,BA_compressed),'compressed3.bmp');
-c) Decompression and Inverse DCT:
-Decompress the image by padding the top-left mxm block, applying the inverse DCT, and reconstructing the original image.
+Compress the image by retaining the top-left mxm block from the DCT of each block.
 
-A = imread('image1.bmp');
-RA = A(:,:,1);
-GA = A(:,:,2);
-BA = A(:,:,3);
-m = 3;
-fun1 = @(block_struct) dct2(block_struct.data);
-fun3 = @(block_struct) padarray(block_struct.data(1:m,1:m),[8-m 8-m],'post');
-fun4 = @(block_struct) idct2(block_struct.data);  % Inverse DCT
-RA_dct = blockproc(RA,[8 8],fun1);
-GA_dct = blockproc(GA,[8 8],fun1);
-BA_dct = blockproc(BA,[8 8],fun1);
-RA_padded = blockproc(RA_dct,[8 8],fun3);
-GA_padded = blockproc(GA_dct,[8 8],fun3);
-BA_padded = blockproc(BA_dct,[8 8],fun3);
-RA_decomp = blockproc(RA_padded,[8 8],fun4);
-GA_decomp = blockproc(GA_padded,[8 8],fun4);
-BA_decomp = blockproc(BA_padded,[8 8],fun4);
-RA_decomp3 = cat(3,RA_decomp,RA_decomp,RA_decomp);
-RA_uint8 = uint8(RA_decomp3);
-RA_NewImage = RA_uint8(:,:,1);
-GA_decomp3 = cat(3,GA_decomp,GA_decomp,GA_decomp);
-GA_uint8 = uint8(GA_decomp3);
-GA_NewImage = GA_uint8(:,:,1);
-BA_decomp3 = cat(3,BA_decomp,BA_decomp,BA_decomp);
-BA_uint8 = uint8(BA_decomp3);
-BA_NewImage = BA_uint8(:,:,1);
-NewImage = cat(3,RA_NewImage,GA_NewImage,BA_NewImage);
-imwrite(NewImage,'m3.bmp');
-d) PSNR Calculation:
-Calculate the Peak Signal-to-Noise Ratio (PSNR) of the decompressed image.
+Decompress the image by applying padding and inverse DCT to reconstruct the image.
 
-psnr(NewImage, A);
-e) PSNR vs m Plot:
-Plot the relationship between compression level m and PSNR.
+Calculate PSNR (Peak Signal-to-Noise Ratio) for each compression level (m=1, m=2, m=3, m=4) to assess the quality of the compressed image.
 
-matlab
-Copy
-Edit
-x_discrete = [1 2 3 4];
-y_discrete = [19.8635 21.9069 23.7734 25.9427];
-plot(x_discrete, y_discrete);
-xlabel('Compression level (m)');
-ylabel('PSNR');
-title('PSNR vs Compression level');
-2. Audio Spectral Analysis and Filtering
-Objective:
-Perform spectral analysis on an audio signal, apply a Butterworth filter, and visualize the frequency response, magnitude spectrum, and impulse response.
+Plot the PSNR vs Compression Level to visualize the relationship between compression and image quality.
+
+Results:
+The compressed images show a significant decrease in file size compared to the original image, with varying quality depending on the compression level (m).
+
+The PSNR value increases as the compression level (m) increases, indicating better image quality with less compression.
+
+Example Image Sizes:
+Original Image Size: 5.93MB
+
+Compressed Image Sizes:
+
+m=1: 94.9 KB
+
+m=2: 379 KB
+
+m=3: 854 KB
+
+m=4: 1.48MB
+
+Task 2: Audio Spectral Analysis and Filtering
+Description:
+In this task, audio spectral analysis and filtering are performed using a Butterworth filter. The audio file is analyzed in the frequency domain using the Fast Fourier Transform (FFT), and a low-pass Butterworth filter is applied to remove specific frequencies. The task includes the following steps:
+
+Read the audio file and plot its unshifted and shifted magnitude spectrum.
+
+Apply a Butterworth filter to the audio signal to remove noise and unwanted frequencies.
+
+Visualize the filtered signal in the frequency domain and the frequency response of the filter.
+
+Generate and visualize the impulse response of the filter.
+
+Stretch the audio by a factor of 2 and analyze its frequency spectrum.
+
+Filter Specifications:
+Passband Frequency (Fpass): 2500 Hz
+
+Stopband Frequency (Fstop): 2800 Hz
 
 Steps:
-a) Original Audio Spectrum:
-Plot the unshifted magnitude spectrum of the audio signal.
+Perform FFT on the original audio signal and plot its magnitude spectrum.
 
-[x, fs] = audioread('audio.wav');
-N = length(x);
-k = 0:N-1;
-X = fft(x, N);
-plot(k, abs(X));
-title('Unshifted Spectrum');
-xlabel('Frequency (Hz)');
-ylabel('Magnitude');
-b) Shifted Spectrum:
-Shift the frequency spectrum for visualization.
+Shift the spectrum to center around zero frequency for better visualization.
 
-f = (-N/2:N/2-1) * fs / N;
-plot(f, abs(fftshift(X)) / N);
-title('Shifted Spectrum');
-xlabel('Frequency (Hz)');
-ylabel('Magnitude');
-c) Filter the Audio:
-Apply a Butterworth filter to the audio signal.
+Apply a low-pass Butterworth filter with a cutoff frequency of 2500 Hz.
 
-FD = designfilt('lowpass', 'FilterOrder', 10, 'CutoffFrequency', 2500, 'SampleRate', fs);
-xFiltered = filter(FD, x);
-sound(xFiltered, fs);
-d) Filtered Spectrum:
-Plot the spectrum of the filtered audio signal.
+Plot the filtered magnitude spectrum and the frequency response of the filter.
 
-plot(f, abs(fftshift(fft(xFiltered))) / N);
-title('Filtered Shifted Spectrum');
-xlabel('Frequency (Hz)');
-ylabel('Magnitude');
-e) Frequency Response of Filter:
-Visualize the frequency response of the Butterworth filter.
+Generate the impulse response of the filter using the inverse Fourier transform of the frequency response.
 
-matlab
-Copy
-Edit
-freqz(FD);
-title('Frequency Response of Butterworth Filter');
-f) Impulse Response:
-Visualize the impulse response of the filter.
+Stretch the audio (increase playback speed) and analyze its new spectrum.
 
-impz(FD);
-title('Impulse Response');
-g) Speed Up the Audio:
-Stretch the audio and plot the new spectrum.
+Results:
+The shifted magnitude spectrum clearly shows the frequency components of the audio signal.
 
-xFast = stretchAudio(xFiltered, 2);
-sound(xFast, fs);
-Nfast = length(xFast);
-ffast = (-Nfast/2:Nfast/2-1) * 2 * fs / Nfast;
-plot(ffast, abs(fftshift(fft(xFast, Nfast))) / Nfast);
-title('Magnitude Spectrum of Speeded-Up Audio');
-xlabel('Frequency (Hz)');
-ylabel('Magnitude');
-Project Files:
-Image Compression Files: image1.bmp, compressed3.bmp, m3.bmp
+The filtered spectrum shows how unwanted frequencies are removed, improving the quality of the audio.
 
-Audio Files: audio.wav
+The impulse response and frequency response of the Butterworth filter demonstrate the behavior of the filter in both time and frequency domains.
 
-Installation and Requirements:
-To run the code, you will need the following:
+After speeding up the audio, its frequency spectrum is stretched, indicating a shift in the frequency components due to the increased playback speed.
 
-MATLAB or Octave
+Files Included:
+image1.bmp: The original image for compression.
 
-Signal Processing Toolbox (for dct2, idct2, freqz, impz, etc.)
+audio.wav: The original audio file for spectral analysis and filtering.
+
+compressed3.bmp: The compressed image using m=3.
+
+m3.bmp: The decompressed image after applying inverse DCT and padding.
+
+How to Run:
+Install MATLAB: Ensure you have MATLAB installed with the necessary toolboxes (Signal Processing Toolbox).
+
+Prepare the Files:
+
+Place the image file (image1.bmp) and audio file (audio.wav) in the working directory.
+
+Run the Scripts: Open MATLAB and run the provided scripts for both Image Compression and Audio Spectral Analysis and Filtering. The scripts will process the files and generate the required output images and plots.
