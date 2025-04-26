@@ -1,0 +1,72 @@
+% 1.1. Decompose the image into its RGB components and save them
+A = imread('image1.bmp');
+RA = A(:,:,1);  % Red Component
+GA = A(:,:,2);  % Green Component
+BA = A(:,:,3);  % Blue Component
+
+% Save each component as a separate image
+imwrite(RA, 'imageredcomponent.bmp');
+imwrite(GA, 'imagegreencomponent.bmp');
+imwrite(BA, 'imagebluecomponent.bmp');
+
+% 1.2. Compression - Apply DCT and retain top-left mxm block
+m = 3;  % Compression level (can be varied)
+
+% Define the DCT and block-processing functions
+fun1 = @(block_struct) dct2(block_struct.data);
+fun2 = @(block_struct) block_struct.data(1:m,1:m);  % Take the top-left mxm block
+
+% Apply blockproc to each color component
+RA_dct = blockproc(RA, [8 8], fun1);
+GA_dct = blockproc(GA, [8 8], fun1);
+BA_dct = blockproc(BA, [8 8], fun1);
+
+% Compress the images by retaining top-left mxm block
+RA_compressed = blockproc(RA_dct, [8 8], fun2);
+GA_compressed = blockproc(GA_dct, [8 8], fun2);
+BA_compressed = blockproc(BA_dct, [8 8], fun2);
+
+% Save the compressed image
+imwrite(cat(3, RA_compressed, GA_compressed, BA_compressed), 'compressed3.bmp');
+
+% 1.3. Decompression - Apply IDCT and zero-padding
+fun3 = @(block_struct) padarray(block_struct.data(1:m, 1:m), [8-m 8-m], 'post');
+fun4 = @(block_struct) idct2(block_struct.data);  % Inverse DCT
+
+% Apply blockproc to DCT matrices
+RA_padded = blockproc(RA_dct, [8 8], fun3);
+GA_padded = blockproc(GA_dct, [8 8], fun3);
+BA_padded = blockproc(BA_dct, [8 8], fun3);
+
+% Apply IDCT to decompressed components
+RA_decomp = blockproc(RA_padded, [8 8], fun4);
+GA_decomp = blockproc(GA_padded, [8 8], fun4);
+BA_decomp = blockproc(BA_padded, [8 8], fun4);
+
+% Concatenate the decompressed components and convert to uint8
+RA_decomp3 = cat(3, RA_decomp, RA_decomp, RA_decomp);
+RA_uint8 = uint8(RA_decomp3);
+RA_NewImage = RA_uint8(:,:,1);
+
+GA_decomp3 = cat(3, GA_decomp, GA_decomp, GA_decomp);
+GA_uint8 = uint8(GA_decomp3);
+GA_NewImage = GA_uint8(:,:,1);
+
+BA_decomp3 = cat(3, BA_decomp, BA_decomp, BA_decomp);
+BA_uint8 = uint8(BA_decomp3);
+BA_NewImage = BA_uint8(:,:,1);
+
+% Reconstruct the image
+NewImage = cat(3, RA_NewImage, GA_NewImage, BA_NewImage);
+imwrite(NewImage, 'm3.bmp');
+
+% 1.4. PSNR Calculation
+psnr(NewImage, A);
+
+% 1.5. PSNR vs m Plot
+x_discrete = [1 2 3 4];
+y_discrete = [19.8635 21.9069 23.7734 25.9427];
+plot(x_discrete, y_discrete);
+xlabel('Compression level (m)');
+ylabel('PSNR');
+title('PSNR vs Compression level');
