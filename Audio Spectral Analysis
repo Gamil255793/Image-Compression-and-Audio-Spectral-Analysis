@@ -1,0 +1,55 @@
+% 2.1. Original Audio Spectrum
+[x, fs] = audioread('audio.wav');
+N = length(x);
+k = 0:N-1;
+X = fft(x, N);
+figure;
+plot(k, abs(X));
+title('Unshifted Spectrum');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+
+% 2.2. Shifted Spectrum
+f = (-N/2:N/2-1) * fs / N;
+figure;
+plot(f, abs(fftshift(X)) / N);
+title('Shifted Spectrum');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+
+% 2.3. Apply Butterworth Filter to the Audio Signal
+FD = designfilt('lowpass', 'FilterOrder', 10, 'CutoffFrequency', 2500, 'SampleRate', fs);
+xFiltered = filter(FD, x);
+
+% Play the filtered audio
+sound(xFiltered, fs);
+
+% 2.4. Filtered Spectrum
+figure;
+plot(f, abs(fftshift(fft(xFiltered))) / N);
+title('Filtered Shifted Spectrum');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+
+% 2.5. Frequency Response of the Butterworth Filter
+figure;
+freqz(FD);
+title('Frequency Response of Butterworth Filter');
+
+% 2.6. Impulse Response of the Filter
+figure;
+impz(FD);
+title('Impulse Response');
+
+% 2.7. Speed Up the Audio (Stretch the audio)
+xFast = stretchAudio(xFiltered, 2);
+sound(xFast, fs);
+
+% 2.8. Fast Audio Spectrum
+Nfast = length(xFast);
+ffast = (-Nfast/2:Nfast/2-1) * 2 * fs / Nfast;
+figure;
+plot(ffast, abs(fftshift(fft(xFast, Nfast))) / Nfast);
+title('Magnitude Spectrum of Speeded-Up Audio');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
